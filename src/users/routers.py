@@ -25,11 +25,13 @@ async def user_registration(
 ) -> Response:
     try:
         result: int = await create_user(session=session, user_data=user)
-    except EmailInUse as exc:
-        return Response(content=exc, status_code=400)
-    except ExceptUser as exc:
-        return Response(content=exc, status_code=400)
-    except ValueError as exc:
-        return Response(content=f"Error in the data {exc}", status_code=400)
+    except EmailInUse:
+        return Response(content="The email address is already in use", status_code=400)
+    except ExceptUser:
+        return Response(
+            content="The user with the username: %s is already registered"
+            % user.username,
+            status_code=400,
+        )
     else:
         return Response(status_code=status.HTTP_201_CREATED, content="Ok")
