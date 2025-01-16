@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "library management"
+version = "0.1.0"
+description = ""
+authors = ["SRubtsov <frexrub@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.6"
+uvicorn = "^0.34.0"
+alembic = "^1.14.0"
+asyncpg = "^0.30.0"
+pydantic-settings = "^2.7.1"
+pydantic = "^2.10.5"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.37"}
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+mypy = "^1.14.1"
+black = "^24.10.0"
+isort = "^5.13.2"
+httpx = "^0.28.1"
+sqlalchemy-utils = "^0.41.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
