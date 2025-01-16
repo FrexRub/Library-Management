@@ -8,3 +8,11 @@ class ExceptDB(Exception):
 
 class ExceptUser(Exception):
     pass
+
+
+class ErrorInData(Exception):
+    pass
+
+
+class EmailInUse(Exception):
+    pass
