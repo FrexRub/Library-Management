@@ -24,3 +24,8 @@ class OutUserSchemas(BaseModel):
     last_name: str
     email: EmailStr
     registered_at: datetime
+
+
+class LoginSchemas(BaseModel):
+    username: str
+    password: str
