@@ -3,7 +3,6 @@ name = "library management"
 version = "0.1.0"
 description = ""
 authors = ["SRubtsov <frexrub@gmail.com>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
