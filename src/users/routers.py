@@ -12,7 +12,13 @@ from src.core.exceptions import (
     UniqueViolationError,
 )
 from src.core.jwt_utils import create_jwt, validate_password
-from src.users.crud import get_user_from_db, create_user, get_users, update_user_db
+from src.users.crud import (
+    get_user_from_db,
+    create_user,
+    get_users,
+    update_user_db,
+    delete_user_db,
+)
 from src.users.depends import (
     current_superuser_user,
     user_by_id,
@@ -29,13 +35,15 @@ from src.users.schemas import (
 router = APIRouter(prefix="/users", tags=["User"])
 
 
-@router.post("/create", response_class=Response, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/create", response_model=OutUserSchemas, status_code=status.HTTP_201_CREATED
+)
 async def user_registration(
     user: UserCreateSchemas,
     session: AsyncSession = Depends(get_async_session),
-) -> Response:
+):
     try:
-        result: int = await create_user(session=session, user_data=user)
+        result: User = await create_user(session=session, user_data=user)
     except EmailInUse:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -49,7 +57,7 @@ async def user_registration(
     except ErrorInData:
         pass
     else:
-        return Response(status_code=status.HTTP_201_CREATED, content="Ok")
+        return result
 
 
 @router.post("/login", response_class=Response, status_code=status.HTTP_200_OK)
@@ -133,3 +141,12 @@ async def update_user_partial(
         )
     else:
         return res
+
+
+@router.delete("/{id_user}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user: User = Depends(user_by_id),
+    super_user: User = Depends(current_superuser_user),
+    session: AsyncSession = Depends(get_async_session),
+) -> None:
+    await delete_user_db(session=session, user=user)

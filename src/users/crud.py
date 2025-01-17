@@ -48,7 +48,7 @@ async def find_user_by_email(session: AsyncSession, email: str) -> Optional[User
     return result.scalar_one_or_none()
 
 
-async def create_user(session: AsyncSession, user_data: UserCreateSchemas) -> int:
+async def create_user(session: AsyncSession, user_data: UserCreateSchemas) -> User:
     result: Optional[User] = await find_user_by_email(
         session=session, email=user_data.email
     )
@@ -76,7 +76,7 @@ async def create_user(session: AsyncSession, user_data: UserCreateSchemas) -> in
         ).decode()
         session.add(new_user)
         await session.commit()
-        return new_user.id
+        return new_user
 
 
 async def get_users(session: AsyncSession) -> list[User]:
@@ -104,3 +104,8 @@ async def update_user_db(
             "Duplicate key value violates unique constraint users_email_key"
         )
     return user
+
+
+async def delete_user_db(session: AsyncSession, user: User) -> None:
+    await session.delete(user)
+    await session.commit()

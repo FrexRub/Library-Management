@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).parent.parent.parent
 
-COOKIE_NAME = "bonds_chat"
+COOKIE_NAME = "bonds_library"
 
 
 def configure_logging(level=logging.INFO):
