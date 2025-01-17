@@ -58,3 +58,9 @@ async def userlogin(
         return resp
     else:
         return Response(content="Error password", status_code=400)
+
+
+@router.get("/list", status_code=200)
+async def get_list_users(session=Depends(get_async_session)):
+    pass
+

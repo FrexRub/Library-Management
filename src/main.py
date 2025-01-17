@@ -11,8 +11,7 @@ app.include_router(router_users)
 
 @app.get("/", response_class=HTMLResponse)
 def index(response: Response):
-    response.set_cookie(key="COOKIE_NAME", value="token", httponly=True)
-    return HTMLResponse("Hello")
+    return HTMLResponse("Library Management")
 
 
 if __name__ == "__main__":
