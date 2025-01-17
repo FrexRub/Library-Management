@@ -1,22 +1,30 @@
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from fastapi.exceptions import HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.responses import Response
 
 from src.core.config import COOKIE_NAME
 from src.core.database import get_async_session
-from src.core.exceptions import ErrorInData, NotFindUser, EmailInUse, ExceptUser
+from src.core.exceptions import (
+    ErrorInData,
+    NotFindUser,
+    EmailInUse,
+    ExceptUser,
+    UniqueViolationError,
+)
 from src.core.jwt_utils import create_jwt, validate_password
-from src.users.crud import get_user_from_db, create_user, get_users
+from src.users.crud import get_user_from_db, create_user, get_users, update_user_db
 from src.users.depends import (
     current_superuser_user,
-    current_user_authorization,
     user_by_id,
 )
 from src.users.models import User
-from src.users.schemas import UserCreateSchemas, LoginSchemas, OutUserSchemas
+from src.users.schemas import (
+    UserCreateSchemas,
+    LoginSchemas,
+    OutUserSchemas,
+    UserUpdateSchemas,
+    UserUpdatePartialSchemas,
+)
 
 router = APIRouter(prefix="/users", tags=["User"])
 
@@ -89,3 +97,39 @@ async def get_list_users(
 @router.get("/{id_user}/", response_model=OutUserSchemas)
 async def get_product(user: User = Depends(user_by_id)):
     return user
+
+
+@router.put("/{id_user}/", response_model=OutUserSchemas)
+async def update_user(
+    user_update: UserUpdateSchemas,
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(get_async_session),
+):
+    try:
+        res = await update_user_db(session=session, user=user, user_update=user_update)
+    except UniqueViolationError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Duplicate email",
+        )
+    else:
+        return res
+
+
+@router.patch("/{id_user}/", response_model=OutUserSchemas)
+async def update_user_partial(
+    user_update: UserUpdatePartialSchemas,
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(get_async_session),
+):
+    try:
+        res = await update_user_db(
+            session=session, user=user, user_update=user_update, partial=True
+        )
+    except UniqueViolationError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Duplicate email",
+        )
+    else:
+        return res

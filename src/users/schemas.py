@@ -1,3 +1,4 @@
+from typing import Optional
 from datetime import datetime
 import re
 
@@ -14,6 +15,18 @@ class UserBaseSchemas(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
+
+
+class UserUpdateSchemas(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+
+
+class UserUpdatePartialSchemas(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
 class UserCreateSchemas(UserBaseSchemas):

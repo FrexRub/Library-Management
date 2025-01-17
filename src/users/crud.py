@@ -1,14 +1,14 @@
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Union
 
 from sqlalchemy import select
 from sqlalchemy.engine import Result
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import configure_logging
 from src.core.exceptions import (
-    ExceptDB,
+    UniqueViolationError,
     NotFindUser,
     EmailInUse,
     ExceptUser,
@@ -16,10 +16,11 @@ from src.core.exceptions import (
 )
 from src.core.jwt_utils import create_hash_password
 from src.users.models import User
-
-
-if TYPE_CHECKING:
-    from src.users.schemas import UserCreateSchemas
+from src.users.schemas import (
+    UserCreateSchemas,
+    UserUpdateSchemas,
+    UserUpdatePartialSchemas,
+)
 
 configure_logging(logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ async def find_user_by_email(session: AsyncSession, email: str) -> Optional[User
     return result.scalar_one_or_none()
 
 
-async def create_user(session: AsyncSession, user_data: "UserCreateSchemas") -> int:
+async def create_user(session: AsyncSession, user_data: UserCreateSchemas) -> int:
     result: Optional[User] = await find_user_by_email(
         session=session, email=user_data.email
     )
@@ -83,3 +84,23 @@ async def get_users(session: AsyncSession) -> list[User]:
     result: Result = await session.execute(stmt)
     users = result.scalars().all()
     return list(users)
+
+
+async def update_user_db(
+    session: AsyncSession,
+    user: User,
+    user_update: Union[UserUpdateSchemas, UserUpdatePartialSchemas],
+    partial: bool = False,
+) -> User:
+    try:
+        for name, value in user_update.model_dump(
+            exclude_unset=partial
+        ).items():  # Преобразовываем объект в словарь
+            setattr(user, name, value)
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise UniqueViolationError(
+            "Duplicate key value violates unique constraint users_email_key"
+        )
+    return user

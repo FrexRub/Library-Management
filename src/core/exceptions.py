@@ -16,3 +16,7 @@ class ErrorInData(Exception):
 
 class EmailInUse(Exception):
     pass
+
+
+class UniqueViolationError(Exception):
+    pass
