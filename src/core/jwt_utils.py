@@ -79,19 +79,6 @@ def decode_jwt(
     return decoded
 
 
-def set_cookie(
-    response: Response,
-    token: str,
-) -> None:
-    """
-        Устанавливает куки с jwt-токеном
-    :param response:
-    :param token:
-    :return:
-    """
-    response.set_cookie(key=COOKIE_NAME, value=token, httponly=True)
-
-
 def create_jwt(user: str) -> str:
     payload = dict()
     payload["sub"] = user

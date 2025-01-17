@@ -8,7 +8,7 @@ from starlette.responses import Response
 from src.core.config import COOKIE_NAME
 from src.core.database import get_async_session
 from src.core.exceptions import ErrorInData, NotFindUser, EmailInUse, ExceptUser
-from src.core.jwt_utils import create_jwt, set_cookie, validate_password
+from src.core.jwt_utils import create_jwt, validate_password
 from src.users.crud import get_user_from_db, create_user
 from src.users.depends import current_superuser_user
 from src.users.models import User
@@ -47,18 +47,27 @@ async def userlogin(data_login: LoginSchemas, session=Depends(get_async_session)
             session=session, username=data_login.username
         )
     except NotFindUser:
-        return Response(content="User not found", status_code=400)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"The user with the username: {data_login.username} not found",
+        )
+
     if validate_password(
         password=data_login.password, hashed_password=user.hashed_password.encode()
     ):
+        access_token: str = create_jwt(str(user.id))
+
         resp = Response(
             content="The user is logged in",
-            status_code=200,
+            status_code=status.HTTP_202_ACCEPTED,
         )
-        resp.set_cookie(key=COOKIE_NAME, value="token", httponly=True)
+        resp.set_cookie(key=COOKIE_NAME, value=access_token, httponly=True)
         return resp
     else:
-        return Response(content="Error password", status_code=400)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error password for login: {data_login.username}",
+        )
 
 
 @router.get("/list", status_code=200)
