@@ -10,7 +10,11 @@ from src.core.database import get_async_session
 from src.core.exceptions import ErrorInData, NotFindUser, EmailInUse, ExceptUser
 from src.core.jwt_utils import create_jwt, validate_password
 from src.users.crud import get_user_from_db, create_user, get_users
-from src.users.depends import current_superuser_user, current_user_authorization
+from src.users.depends import (
+    current_superuser_user,
+    current_user_authorization,
+    user_by_id,
+)
 from src.users.models import User
 from src.users.schemas import UserCreateSchemas, LoginSchemas, OutUserSchemas
 
@@ -80,3 +84,8 @@ async def get_list_users(
     user: User = Depends(current_superuser_user),
 ):
     return await get_users(session=session)
+
+
+@router.get("/{id_user}/", response_model=OutUserSchemas)
+async def get_product(user: User = Depends(user_by_id)):
+    return user

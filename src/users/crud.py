@@ -37,13 +37,8 @@ async def get_user_from_db(session: AsyncSession, username: str) -> User:
     return user
 
 
-async def get_user_by_id(session: AsyncSession, id_user: int) -> User:
-    logger.info("Start find user by id %d" % id_user)
-    stmt = select(User).where(User.id == id_user)
-    res: Result = await session.execute(stmt)
-    user: User = res.scalars().first()
-    logger.info("User by id %d has been found" % id_user)
-    return user
+async def get_user_by_id(session: AsyncSession, id_user: int) -> Optional[User]:
+    return await session.get(User, id_user)
 
 
 async def find_user_by_email(session: AsyncSession, email: str) -> Optional[User]:
