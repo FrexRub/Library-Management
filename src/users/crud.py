@@ -81,3 +81,10 @@ async def create_user(session: AsyncSession, user_data: "UserCreateSchemas") -> 
         session.add(new_user)
         await session.commit()
         return new_user.id
+
+
+async def get_users(session: AsyncSession) -> list[User]:
+    stmt = select(User).order_by(User.id)
+    result: Result = await session.execute(stmt)
+    users = result.scalars().all()
+    return list(users)

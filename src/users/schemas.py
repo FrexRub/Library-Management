@@ -33,10 +33,10 @@ class UserCreateSchemas(UserBaseSchemas):
 
 
 class OutUserSchemas(UserBaseSchemas):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
     registered_at: datetime
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LoginSchemas(BaseModel):

@@ -9,10 +9,10 @@ from src.core.config import COOKIE_NAME
 from src.core.database import get_async_session
 from src.core.exceptions import ErrorInData, NotFindUser, EmailInUse, ExceptUser
 from src.core.jwt_utils import create_jwt, validate_password
-from src.users.crud import get_user_from_db, create_user
-from src.users.depends import current_superuser_user
+from src.users.crud import get_user_from_db, create_user, get_users
+from src.users.depends import current_superuser_user, current_user_authorization
 from src.users.models import User
-from src.users.schemas import UserCreateSchemas, LoginSchemas
+from src.users.schemas import UserCreateSchemas, LoginSchemas, OutUserSchemas
 
 router = APIRouter(prefix="/users", tags=["User"])
 
@@ -40,8 +40,10 @@ async def user_registration(
         return Response(status_code=status.HTTP_201_CREATED, content="Ok")
 
 
-@router.post("/login", response_class=Response, status_code=200)
-async def userlogin(data_login: LoginSchemas, session=Depends(get_async_session)):
+@router.post("/login", response_class=Response, status_code=status.HTTP_200_OK)
+async def userlogin(
+    data_login: LoginSchemas, session: AsyncSession = Depends(get_async_session)
+):
     try:
         user: User = await get_user_from_db(
             session=session, username=data_login.username
@@ -70,13 +72,11 @@ async def userlogin(data_login: LoginSchemas, session=Depends(get_async_session)
         )
 
 
-@router.get("/list", status_code=200)
-async def get_list_users(session=Depends(get_async_session)):
-    pass
-
-
-# @router.get("/", response_model=list[Product])
-# async def ger_products(
-#     session: AsyncSession = Depends(db_helper.scope_session_dependency),
-# ):
-#     return await crud.get_products(session=session)
+@router.get(
+    "/list", response_model=list[OutUserSchemas], status_code=status.HTTP_200_OK
+)
+async def get_list_users(
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_superuser_user),
+):
+    return await get_users(session=session)
