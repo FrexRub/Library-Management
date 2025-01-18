@@ -13,6 +13,7 @@ from src.books.crud import (
     create_book,
     get_books,
     update_book_db,
+    delete_book_db,
 )
 from src.books.dependencies import book_by_id
 from src.users.depends import (
@@ -110,12 +111,16 @@ async def update_book(
         return res
 
 
-#
-#
-# @router.delete("/{genre_id}/", status_code=status.HTTP_204_NO_CONTENT)
-# async def delete_genre(
-#     user: "User" = Depends(current_superuser_user),
-#     genre: Genre = Depends(genre_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ) -> None:
-#     await delete_genre_db(session=session, genre=genre)
+@router.delete("/{book_id}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_book(
+    user: "User" = Depends(current_superuser_user),
+    book: Book = Depends(book_by_id),
+    session: AsyncSession = Depends(get_async_session),
+) -> None:
+    try:
+        await delete_book_db(session=session, book=book)
+    except ErrorInData as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )

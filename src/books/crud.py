@@ -99,7 +99,12 @@ async def update_book_db(
     return book
 
 
-async def delete_genre_db(session: AsyncSession, genre: Genre) -> None:
-    logger.info("Delete genre by id %d" % genre.id)
-    await session.delete(genre)
-    await session.commit()
+async def delete_book_db(session: AsyncSession, book: Book) -> None:
+    logger.info("Delete book by id %d" % book.id)
+    try:
+        await session.delete(book)
+        await session.commit()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+        await session.rollback()
+        raise ExceptDB(exc)
