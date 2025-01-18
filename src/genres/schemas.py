@@ -12,10 +12,6 @@ class GenreUpdateSchemas(GenreBaseSchemas):
     pass
 
 
-class GenreUpdatePartialSchemas(GenreBaseSchemas):
-    title: Optional[str] = None
-
-
 class GenreCreateSchemas(GenreBaseSchemas):
     pass
 

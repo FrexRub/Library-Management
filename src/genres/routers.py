@@ -12,6 +12,7 @@ from src.core.exceptions import (
 from src.genres.crud import (
     create_genre,
     get_genres,
+    update_genre_db,
 )
 from src.genres.dependencies import genre_by_id
 from src.users.depends import (
@@ -22,7 +23,6 @@ from src.genres.schemas import (
     GenreCreateSchemas,
     OutGenreSchemas,
     GenreUpdateSchemas,
-    GenreUpdatePartialSchemas,
 )
 
 if TYPE_CHECKING:
@@ -70,46 +70,26 @@ async def get_genre(
     return genre
 
 
-#
-# @router.put("/{author_id}/", response_model=OutAuthorSchemas)
-# async def update_author(
-#     author_update: AuthorUpdateSchemas,
-#     user: "User" = Depends(current_superuser_user),
-#     author: Author = Depends(author_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ):
-#     try:
-#         res = await update_author_db(
-#             session=session, author=author, author_update=author_update
-#         )
-#     except ExceptDB:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Error in data base",
-#         )
-#     else:
-#         return res
-#
-#
-# @router.patch("/{author_id}/", response_model=OutAuthorSchemas)
-# async def update_user_partial(
-#     author_update: AuthorUpdatePartialSchemas,
-#     user: "User" = Depends(current_superuser_user),
-#     author: Author = Depends(author_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ):
-#     try:
-#         res = await update_author_db(
-#             session=session, author=author, author_update=author_update, partial=True
-#         )
-#     except ExceptDB:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Error in data base",
-#         )
-#     else:
-#         return res
-#
+@router.put("/{genre_id}/", response_model=OutGenreSchemas)
+async def update_genre(
+    genre_update: GenreUpdateSchemas,
+    user: "User" = Depends(current_superuser_user),
+    genre: Genre = Depends(genre_by_id),
+    session: AsyncSession = Depends(get_async_session),
+):
+    try:
+        res = await update_genre_db(
+            session=session, genre=genre, genre_update=genre_update
+        )
+    except ExceptDB:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error in data base",
+        )
+    else:
+        return res
+
+
 #
 # @router.delete("/{author_id}/", status_code=status.HTTP_204_NO_CONTENT)
 # async def delete_user(

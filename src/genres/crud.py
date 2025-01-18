@@ -1,17 +1,15 @@
 import logging
-from typing import Optional, Union
+from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.engine import Result
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.genres.models import Genre
 from src.genres.schemas import (
     GenreCreateSchemas,
-    OutGenreSchemas,
     GenreUpdateSchemas,
-    GenreUpdatePartialSchemas,
 )
 from src.core.exceptions import ErrorInData, ExceptDB
 from src.core.config import configure_logging
@@ -53,26 +51,26 @@ async def get_genre(session: AsyncSession, genre_id: int) -> Optional[Genre]:
     return await session.get(Genre, genre_id)
 
 
-#
-# async def update_author_db(
-#     session: AsyncSession,
-#     author: Author,
-#     author_update: Union[AuthorUpdateSchemas, AuthorUpdatePartialSchemas],
-#     partial: bool = False,
-# ) -> Author:
-#     logger.info("Start update author")
-#     try:
-#         for name, value in author_update.model_dump(
-#             exclude_unset=partial
-#         ).items():  # Преобразовываем объект в словарь
-#             setattr(author, name, value)
-#         await session.commit()
-#     except SQLAlchemyError as exc:
-#         logger.exception("Error in data base %s", exc)
-#         await session.rollback()
-#         raise ExceptDB(exc)
-#     return author
-#
+async def update_genre_db(
+    session: AsyncSession,
+    genre: Genre,
+    genre_update: GenreUpdateSchemas,
+) -> Genre:
+    logger.info("Start update genre")
+    try:
+        for (
+            name,
+            value,
+        ) in genre_update.model_dump().items():  # Преобразовываем объект в словарь
+            setattr(genre, name, value)
+        await session.commit()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+        await session.rollback()
+        raise ExceptDB(exc)
+    return genre
+
+
 #
 # async def delete_author_db(session: AsyncSession, author: Author) -> None:
 #     logger.info("Delete author by id %d" % author.id)
