@@ -4,11 +4,13 @@ import uvicorn
 
 from src.users.routers import router as router_users
 from src.authors.routers import router as router_author
+from src.genres.routers import router as router_genre
 
 app = FastAPI()
 
 app.include_router(router_users)
 app.include_router(router_author)
+app.include_router(router_genre)
 
 
 @app.get("/", response_class=HTMLResponse)
