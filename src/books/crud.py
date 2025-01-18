@@ -2,6 +2,7 @@ import logging
 from typing import Optional, Union
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from sqlalchemy.engine import Result
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +13,8 @@ from src.books.schemas import (
     BookUpdateSchemas,
     BookUpdatePartialSchemas,
     BookCreateSchemas,
+    OutBookFoolSchemas,
+    AuthorSchemas,
 )
 from src.core.exceptions import ErrorInData, ExceptDB
 from src.core.config import configure_logging
@@ -52,16 +55,41 @@ async def create_book(session: AsyncSession, book_in: BookCreateSchemas) -> Book
         return book
 
 
-async def get_books(session: AsyncSession) -> list[Book]:
+async def book_to_schema(session: AsyncSession, book: Book) -> OutBookFoolSchemas:
+    # OutBookFoolSchemas
+    author: AuthorSchemas = AuthorSchemas(
+        id=book.author.id, full_name=book.author.full_name
+    )
+    list_genres = list()
+    for i_genres in book.genres_ids:
+        genres = await session.get(Genre, i_genres)
+        list_genres.append(genres.title if genres else "отсутствует")
+    res: OutBookFoolSchemas = OutBookFoolSchemas(
+        id=book.id,
+        title=book.title,
+        description=book.description,
+        author=author,
+        release_date=book.release_date,
+        count=book.count,
+        genres=list_genres,
+    )
+    return res
+
+
+async def get_books(session: AsyncSession) -> list[OutBookFoolSchemas]:
     logger.info("Getting a list of books")
     try:
-        stmt = select(Book).order_by(Book.id)
+        stmt = select(Book).options(joinedload(Book.author)).order_by(Book.id)
         result: Result = await session.execute(stmt)
         books = result.scalars().all()
     except SQLAlchemyError as exc:
         logger.exception("Error in data base %s", exc)
     else:
-        return list(books)
+        list_books = list()
+        for book in books:  # type: Book
+            list_books.append(await book_to_schema(session=session, book=book))
+
+        return list_books
 
 
 async def get_book(session: AsyncSession, book_id: int) -> Optional[Book]:

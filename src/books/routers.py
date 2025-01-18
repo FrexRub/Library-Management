@@ -25,6 +25,7 @@ from src.books.schemas import (
     BookUpdatePartialSchemas,
     BookCreateSchemas,
     OutBookSchemas,
+    OutBookFoolSchemas,
 )
 
 if TYPE_CHECKING:
@@ -56,7 +57,7 @@ async def new_book(
 
 
 @router.get(
-    "/list", response_model=list[OutBookSchemas], status_code=status.HTTP_200_OK
+    "/list", response_model=list[OutBookFoolSchemas], status_code=status.HTTP_200_OK
 )
 async def get_list_books(
     session: AsyncSession = Depends(get_async_session),

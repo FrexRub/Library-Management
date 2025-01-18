@@ -1,11 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
-from src.core.database import async_session_maker
-from src.genres.schemas import OutGenreSchemas
-from src.authors.models import Author
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BookBaseSchemas(BaseModel):
@@ -34,8 +30,26 @@ class BookCreateSchemas(BookBaseSchemas):
     pass
 
 
+class AuthorSchemas(BaseModel):
+    id: int
+    full_name: str
+
+
+class GenreSchemas(BaseModel):
+    title: str
+
+
 class OutBookSchemas(BookBaseSchemas):
     id: int
-    # genres_ids: list[OutGenreSchemas]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class OutBookFoolSchemas(BaseModel):
+    id: int
+    title: str
+    description: str
+    author: AuthorSchemas
+    release_date: date
+    count: int
+    genres: list[str]
