@@ -71,8 +71,7 @@ async def update_genre_db(
     return genre
 
 
-#
-# async def delete_author_db(session: AsyncSession, author: Author) -> None:
-#     logger.info("Delete author by id %d" % author.id)
-#     await session.delete(author)
-#     await session.commit()
+async def delete_genre_db(session: AsyncSession, genre: Genre) -> None:
+    logger.info("Delete genre by id %d" % genre.id)
+    await session.delete(genre)
+    await session.commit()

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +13,7 @@ from src.genres.crud import (
     create_genre,
     get_genres,
     update_genre_db,
+    delete_genre_db,
 )
 from src.genres.dependencies import genre_by_id
 from src.users.depends import (
@@ -90,11 +91,10 @@ async def update_genre(
         return res
 
 
-#
-# @router.delete("/{author_id}/", status_code=status.HTTP_204_NO_CONTENT)
-# async def delete_user(
-#     user: "User" = Depends(current_superuser_user),
-#     author: Author = Depends(author_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ) -> None:
-#     await delete_author_db(session=session, author=author)
+@router.delete("/{genre_id}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_genre(
+    user: "User" = Depends(current_superuser_user),
+    genre: Genre = Depends(genre_by_id),
+    session: AsyncSession = Depends(get_async_session),
+) -> None:
+    await delete_genre_db(session=session, genre=genre)
