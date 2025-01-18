@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends, Response, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import COOKIE_NAME
 from src.core.database import get_async_session
 from src.core.exceptions import (
     ErrorInData,
     ExceptDB,
 )
-from src.authors.crud import create_author
+from src.authors.crud import create_author, get_authors
+from src.authors.dependencies import author_by_id
 from src.users.depends import (
     current_superuser_user,
 )
@@ -44,52 +44,24 @@ async def new_author(
         return result
 
 
-#
-# @router.post("/login", response_class=Response, status_code=status.HTTP_200_OK)
-# async def userlogin(
-#     data_login: LoginSchemas, session: AsyncSession = Depends(get_async_session)
-# ):
-#     try:
-#         user: User = await get_user_from_db(
-#             session=session, username=data_login.username
-#         )
-#     except NotFindUser:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"The user with the username: {data_login.username} not found",
-#         )
-#
-#     if validate_password(
-#         password=data_login.password, hashed_password=user.hashed_password.encode()
-#     ):
-#         access_token: str = create_jwt(str(user.id))
-#
-#         resp = Response(
-#             content="The user is logged in",
-#             status_code=status.HTTP_202_ACCEPTED,
-#         )
-#         resp.set_cookie(key=COOKIE_NAME, value=access_token, httponly=True)
-#         return resp
-#     else:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Error password for login: {data_login.username}",
-#         )
-#
-#
-# @router.get(
-#     "/list", response_model=list[OutUserSchemas], status_code=status.HTTP_200_OK
-# )
-# async def get_list_users(
-#     session: AsyncSession = Depends(get_async_session),
-#     user: User = Depends(current_superuser_user),
-# ):
-#     return await get_users(session=session)
-#
-#
-# @router.get("/{id_user}/", response_model=OutUserSchemas)
-# async def get_product(user: User = Depends(user_by_id)):
-#     return user
+@router.get(
+    "/list", response_model=list[OutAuthorSchemas], status_code=status.HTTP_200_OK
+)
+async def get_list_author(
+    session: AsyncSession = Depends(get_async_session),
+    user: "User" = Depends(current_superuser_user),
+):
+    return await get_authors(session=session)
+
+
+@router.get("/{author_id}/", response_model=OutAuthorSchemas)
+async def get_author(
+    user: "User" = Depends(current_superuser_user),
+    author: Author = Depends(author_by_id),
+):
+    return author
+
+
 #
 #
 # @router.put("/{id_user}/", response_model=OutUserSchemas)
