@@ -18,6 +18,7 @@ from src.books.crud import (
 from src.books.dependencies import book_by_id
 from src.users.depends import (
     current_superuser_user,
+    current_user_authorization,
 )
 from src.books.models import Book
 from src.books.schemas import (
@@ -61,14 +62,14 @@ async def new_book(
 )
 async def get_list_books(
     session: AsyncSession = Depends(get_async_session),
-    user: "User" = Depends(current_superuser_user),
+    user: "User" = Depends(current_user_authorization),
 ):
     return await get_books(session=session)
 
 
 @router.get("/{book_id}/", response_model=OutBookSchemas)
 async def get_book(
-    user: "User" = Depends(current_superuser_user),
+    user: "User" = Depends(current_user_authorization),
     book: Book = Depends(book_by_id),
 ):
     return book
