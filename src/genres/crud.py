@@ -48,12 +48,11 @@ async def get_genres(session: AsyncSession) -> list[Genre]:
         return list(genres)
 
 
-#
-#
-# async def get_author(session: AsyncSession, author_id: int) -> Optional[Genre]:
-#     logger.info("Getting author by id %d" % author_id)
-#     return await session.get(Genre, author_id)
-#
+async def get_genre(session: AsyncSession, genre_id: int) -> Optional[Genre]:
+    logger.info("Getting genre by id %d" % genre_id)
+    return await session.get(Genre, genre_id)
+
+
 #
 # async def update_author_db(
 #     session: AsyncSession,

@@ -13,7 +13,7 @@ from src.genres.crud import (
     create_genre,
     get_genres,
 )
-from src.authors.dependencies import author_by_id
+from src.genres.dependencies import genre_by_id
 from src.users.depends import (
     current_superuser_user,
 )
@@ -62,13 +62,14 @@ async def get_list_genre(
     return await get_genres(session=session)
 
 
-# @router.get("/{author_id}/", response_model=OutAuthorSchemas)
-# async def get_author(
-#     user: "User" = Depends(current_superuser_user),
-#     author: Author = Depends(author_by_id),
-# ):
-#     return author
-#
+@router.get("/{genre_id}/", response_model=OutGenreSchemas)
+async def get_genre(
+    user: "User" = Depends(current_superuser_user),
+    genre: Genre = Depends(genre_by_id),
+):
+    return genre
+
+
 #
 # @router.put("/{author_id}/", response_model=OutAuthorSchemas)
 # async def update_author(
