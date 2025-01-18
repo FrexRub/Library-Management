@@ -119,7 +119,7 @@ async def delete_book(
 ) -> None:
     try:
         await delete_book_db(session=session, book=book)
-    except ErrorInData as exp:
+    except ExceptDB as exp:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{exp}",
