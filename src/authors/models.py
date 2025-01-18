@@ -1,9 +1,12 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.database import Base
+
+if TYPE_CHECKING:
+    from src.books.models import Book
 
 
 class Author(Base):
@@ -13,3 +16,7 @@ class Author(Base):
     full_name: Mapped[str] = mapped_column(index=True)
     biography: Mapped[Optional[str]]
     date_birth: Mapped[DateTime] = mapped_column(DateTime)
+
+    books: Mapped[list["Book"]] = relationship(
+        back_populates="author", cascade="all, delete-orphan", passive_deletes=True
+    )

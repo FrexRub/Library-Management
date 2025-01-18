@@ -10,6 +10,7 @@ from src.core.config import setting
 from src.users.models import *
 from src.authors.models import *
 from src.genres.models import *
+from src.books.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
