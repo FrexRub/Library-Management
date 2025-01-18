@@ -10,6 +10,16 @@ class AuthorBaseSchemas(BaseModel):
     date_birth: date
 
 
+class AuthorUpdateSchemas(AuthorBaseSchemas):
+    pass
+
+
+class AuthorUpdatePartialSchemas(AuthorBaseSchemas):
+    full_name: Optional[str] = None
+    biography: Optional[str] = None
+    date_birth: Optional[date] = None
+
+
 class AuthorCreateSchemas(AuthorBaseSchemas):
     pass
 

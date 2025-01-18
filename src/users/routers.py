@@ -32,7 +32,7 @@ from src.users.schemas import (
     UserUpdatePartialSchemas,
 )
 
-router = APIRouter(prefix="/users", tags=["User"])
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post(

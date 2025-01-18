@@ -7,7 +7,12 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.authors.models import Author
-from src.authors.schemas import AuthorCreateSchemas, OutAuthorSchemas
+from src.authors.schemas import (
+    AuthorCreateSchemas,
+    OutAuthorSchemas,
+    AuthorUpdateSchemas,
+    AuthorUpdatePartialSchemas,
+)
 from src.core.exceptions import ErrorInData, ExceptDB
 from src.core.config import configure_logging
 
@@ -48,3 +53,29 @@ async def get_authors(session: AsyncSession) -> list[Author]:
 async def get_author(session: AsyncSession, author_id: int) -> Optional[Author]:
     logger.info("Getting author by id %d" % author_id)
     return await session.get(Author, author_id)
+
+
+async def update_author_db(
+    session: AsyncSession,
+    author: Author,
+    author_update: Union[AuthorUpdateSchemas, AuthorUpdatePartialSchemas],
+    partial: bool = False,
+) -> Author:
+    logger.info("Start update author")
+    try:
+        for name, value in author_update.model_dump(
+            exclude_unset=partial
+        ).items():  # Преобразовываем объект в словарь
+            setattr(author, name, value)
+        await session.commit()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+        await session.rollback()
+        raise ExceptDB(exc)
+    return author
+
+
+async def delete_author_db(session: AsyncSession, author: Author) -> None:
+    logger.info("Delete author by id %d" % author.id)
+    await session.delete(author)
+    await session.commit()
