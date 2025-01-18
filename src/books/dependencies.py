@@ -3,20 +3,20 @@ from fastapi import Path, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_async_session
-from src.genres.crud import get_genre
+from src.books.crud import get_book
 
 if TYPE_CHECKING:
-    from src.genres.models import Genre
+    from src.books.models import Book
 
 
-async def genre_by_id(
-    genre_id: Annotated[int, Path],
+async def book_by_id(
+    book_id: Annotated[int, Path],
     session: AsyncSession = Depends(get_async_session),
-) -> "Genre":
-    genre = await get_genre(session=session, genre_id=genre_id)
-    if genre:
-        return genre
+) -> "Book":
+    book = await get_book(session=session, book_id=book_id)
+    if book:
+        return book
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Genre {genre_id} not found!",
+        detail=f"Book {book_id} not found!",
     )

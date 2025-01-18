@@ -28,11 +28,13 @@ async def create_book(session: AsyncSession, book_in: BookCreateSchemas) -> Book
         session=session, author_id=book_in.model_dump()["id_author"]
     )
     if author is None:
-        raise ErrorInData("Nor find author")
+        logger.info("Not find author")
+        raise ErrorInData("Not find author")
 
     genres_id: list[int] = book_in.model_dump()["genres_ids"]
     for genre_id in genres_id:
         if await session.get(Genre, genre_id) is None:
+            logger.info("Not find genres with id %s" % genre_id)
             raise ErrorInData(f"Not find genres with id {genre_id}")
 
     try:
@@ -46,25 +48,27 @@ async def create_book(session: AsyncSession, book_in: BookCreateSchemas) -> Book
     else:
         session.add(book)
         await session.commit()
+        logger.info("New book create")
         return book
 
 
-#
-# async def get_genres(session: AsyncSession) -> list[Genre]:
-#     logger.info("Getting a list of genres")
-#     try:
-#         stmt = select(Genre).order_by(Genre.id)
-#         result: Result = await session.execute(stmt)
-#         genres = result.scalars().all()
-#     except SQLAlchemyError as exc:
-#         logger.exception("Error in data base %s", exc)
-#     else:
-#         return list(genres)
-#
-#
-# async def get_genre(session: AsyncSession, genre_id: int) -> Optional[Genre]:
-#     logger.info("Getting genre by id %d" % genre_id)
-#     return await session.get(Genre, genre_id)
+async def get_books(session: AsyncSession) -> list[Book]:
+    logger.info("Getting a list of books")
+    try:
+        stmt = select(Book).order_by(Book.id)
+        result: Result = await session.execute(stmt)
+        books = result.scalars().all()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+    else:
+        return list(books)
+
+
+async def get_book(session: AsyncSession, book_id: int) -> Optional[Book]:
+    logger.info("Getting genre by id %d" % book_id)
+    return await session.get(Book, book_id)
+
+
 #
 #
 # async def update_genre_db(

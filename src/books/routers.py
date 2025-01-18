@@ -11,8 +11,9 @@ from src.core.exceptions import (
 )
 from src.books.crud import (
     create_book,
+    get_books,
 )
-from src.books.dependencies import genre_by_id
+from src.books.dependencies import book_by_id
 from src.users.depends import (
     current_superuser_user,
 )
@@ -52,24 +53,24 @@ async def new_book(
         return result
 
 
-# @router.get(
-#     "/list", response_model=list[OutGenreSchemas], status_code=status.HTTP_200_OK
-# )
-# async def get_list_genre(
-#     session: AsyncSession = Depends(get_async_session),
-#     user: "User" = Depends(current_superuser_user),
-# ):
-#     return await get_genres(session=session)
-#
-#
-# @router.get("/{genre_id}/", response_model=OutGenreSchemas)
-# async def get_genre(
-#     user: "User" = Depends(current_superuser_user),
-#     genre: Genre = Depends(genre_by_id),
-# ):
-#     return genre
-#
-#
+@router.get(
+    "/list", response_model=list[OutBookSchemas], status_code=status.HTTP_200_OK
+)
+async def get_list_books(
+    session: AsyncSession = Depends(get_async_session),
+    user: "User" = Depends(current_superuser_user),
+):
+    return await get_books(session=session)
+
+
+@router.get("/{book_id}/", response_model=OutBookSchemas)
+async def get_book(
+    user: "User" = Depends(current_superuser_user),
+    book: Book = Depends(book_by_id),
+):
+    return book
+
+
 # @router.put("/{genre_id}/", response_model=OutGenreSchemas)
 # async def update_genre(
 #     genre_update: GenreUpdateSchemas,
