@@ -42,13 +42,16 @@ async def new_author(
 ):
     try:
         result: Genre = await create_genre(session=session, genre_in=genre)
-    except ExceptDB:
+    except ExceptDB as exp:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error in data bases",
+            detail=f"{exp}",
         )
-    except ErrorInData:
-        pass
+    except ErrorInData as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )
     else:
         return result
 
@@ -82,10 +85,10 @@ async def update_genre(
         res = await update_genre_db(
             session=session, genre=genre, genre_update=genre_update
         )
-    except ExceptDB:
+    except ExceptDB as exp:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error in data base",
+            detail=f"{exp}",
         )
     else:
         return res
@@ -97,4 +100,10 @@ async def delete_genre(
     genre: Genre = Depends(genre_by_id),
     session: AsyncSession = Depends(get_async_session),
 ) -> None:
-    await delete_genre_db(session=session, genre=genre)
+    try:
+        await delete_genre_db(session=session, genre=genre)
+    except ExceptDB as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )
