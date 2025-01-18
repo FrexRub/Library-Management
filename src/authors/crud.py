@@ -51,7 +51,7 @@ async def get_authors(session: AsyncSession) -> list[Author]:
 
 
 async def get_author(session: AsyncSession, author_id: int) -> Optional[Author]:
-    logger.info("Getting author by id %d" % author_id)
+    logger.info("Getting author by id %s" % author_id)
     return await session.get(Author, author_id)
 
 

@@ -840,6 +840,24 @@ email = ["email-validator (>=2.0.0)"]
 timezone = ["tzdata"]
 
 [[package]]
+name = "pydantic-async-validation"
+version = "0.3.0"
+description = "Add async validation to pydantic"
+optional = false
+python-versions = "<4.0,>=3.8"
+files = [
+    {file = "pydantic_async_validation-0.3.0-py3-none-any.whl", hash = "sha256:e03562dfec99ebc601dcf68b2f7d1f3f22d1cd5941765a6c5662c74d40310f46"},
+    {file = "pydantic_async_validation-0.3.0.tar.gz", hash = "sha256:e86fa9f1f4234421bd79deca045bab1370a5280cdc71534fd34b8b81e379587b"},
+]
+
+[package.dependencies]
+pydantic = ">=2.0.0,<3.0.0"
+pytest = ">=7.4,<9.0"
+
+[package.extras]
+fastapi = ["fastapi (>=0.100.0,<1.0.0)"]
+
+[[package]]
 name = "pydantic-core"
 version = "2.27.2"
 description = "Core functionality for Pydantic validation and serialization"
@@ -1208,4 +1226,4 @@ standard = ["colorama (>=0.4)", "httptools (>=0.6.3)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0b208c180d86c74b738368a2aed1b75874c3184114706c3a0afcea966edac67a"
+content-hash = "9785a06a8ccc8c04e5db5c75aa1b36e38aa03f2ce200d78cb9875c1ba5c78086"
