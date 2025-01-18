@@ -36,22 +36,23 @@ async def create_genre(session: AsyncSession, genre_in: GenreCreateSchemas) -> G
         return genre
 
 
+async def get_genres(session: AsyncSession) -> list[Genre]:
+    logger.info("Getting a list of genres")
+    try:
+        stmt = select(Genre).order_by(Genre.id)
+        result: Result = await session.execute(stmt)
+        genres = result.scalars().all()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+    else:
+        return list(genres)
+
+
 #
-# async def get_authors(session: AsyncSession) -> list[Author]:
-#     logger.info("Getting a list of authors")
-#     try:
-#         stmt = select(Author).order_by(Author.id)
-#         result: Result = await session.execute(stmt)
-#         authors = result.scalars().all()
-#     except SQLAlchemyError as exc:
-#         logger.exception("Error in data base %s", exc)
-#     else:
-#         return list(authors)
 #
-#
-# async def get_author(session: AsyncSession, author_id: int) -> Optional[Author]:
+# async def get_author(session: AsyncSession, author_id: int) -> Optional[Genre]:
 #     logger.info("Getting author by id %d" % author_id)
-#     return await session.get(Author, author_id)
+#     return await session.get(Genre, author_id)
 #
 #
 # async def update_author_db(

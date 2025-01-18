@@ -11,6 +11,7 @@ from src.core.exceptions import (
 )
 from src.genres.crud import (
     create_genre,
+    get_genres,
 )
 from src.authors.dependencies import author_by_id
 from src.users.depends import (
@@ -51,17 +52,16 @@ async def new_author(
         return result
 
 
-#
-# @router.get(
-#     "/list", response_model=list[OutAuthorSchemas], status_code=status.HTTP_200_OK
-# )
-# async def get_list_author(
-#     session: AsyncSession = Depends(get_async_session),
-#     user: "User" = Depends(current_superuser_user),
-# ):
-#     return await get_authors(session=session)
-#
-#
+@router.get(
+    "/list", response_model=list[OutGenreSchemas], status_code=status.HTTP_200_OK
+)
+async def get_list_genre(
+    session: AsyncSession = Depends(get_async_session),
+    user: "User" = Depends(current_superuser_user),
+):
+    return await get_genres(session=session)
+
+
 # @router.get("/{author_id}/", response_model=OutAuthorSchemas)
 # async def get_author(
 #     user: "User" = Depends(current_superuser_user),
