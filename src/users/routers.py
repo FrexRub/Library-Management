@@ -103,7 +103,7 @@ async def get_list_users(
 
 
 @router.get("/{id_user}/", response_model=OutUserSchemas)
-async def get_product(user: User = Depends(user_by_id)):
+async def get_user(user: User = Depends(user_by_id)):
     return user
 
 
