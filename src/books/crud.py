@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Union
 
 from sqlalchemy import select
 from sqlalchemy.engine import Result
@@ -69,29 +69,37 @@ async def get_book(session: AsyncSession, book_id: int) -> Optional[Book]:
     return await session.get(Book, book_id)
 
 
-#
-#
-# async def update_genre_db(
-#     session: AsyncSession,
-#     genre: Genre,
-#     genre_update: GenreUpdateSchemas,
-# ) -> Genre:
-#     logger.info("Start update genre")
-#     try:
-#         for (
-#             name,
-#             value,
-#         ) in genre_update.model_dump().items():  # Преобразовываем объект в словарь
-#             setattr(genre, name, value)
-#         await session.commit()
-#     except SQLAlchemyError as exc:
-#         logger.exception("Error in data base %s", exc)
-#         await session.rollback()
-#         raise ExceptDB(exc)
-#     return genre
-#
-#
-# async def delete_genre_db(session: AsyncSession, genre: Genre) -> None:
-#     logger.info("Delete genre by id %d" % genre.id)
-#     await session.delete(genre)
-#     await session.commit()
+async def update_book_db(
+    session: AsyncSession,
+    book: Book,
+    book_update: Union[BookUpdateSchemas, BookUpdatePartialSchemas],
+    partial: bool = False,
+) -> Book:
+    logger.info("Start update book")
+    try:
+        for name, value in book_update.model_dump(exclude_unset=partial).items():
+            if name == "id_author" and await session.get(Author, value) is None:
+                logger.info("Not find author with id %s" % value)
+                raise ErrorInData(f"Not find author with id {value}")
+            elif name == "genres_ids":
+                for genre_id in value:
+                    if await session.get(Genre, genre_id) is None:
+                        logger.info("Not find genres with id %s" % genre_id)
+                        raise ErrorInData(f"Not find genres with id {genre_id}")
+                else:
+                    setattr(book, name, value)
+            else:
+                setattr(book, name, value)
+        await session.commit()
+
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+        await session.rollback()
+        raise ExceptDB(exc)
+    return book
+
+
+async def delete_genre_db(session: AsyncSession, genre: Genre) -> None:
+    logger.info("Delete genre by id %d" % genre.id)
+    await session.delete(genre)
+    await session.commit()

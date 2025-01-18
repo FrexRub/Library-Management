@@ -12,6 +12,7 @@ from src.core.exceptions import (
 from src.books.crud import (
     create_book,
     get_books,
+    update_book_db,
 )
 from src.books.dependencies import book_by_id
 from src.users.depends import (
@@ -71,24 +72,44 @@ async def get_book(
     return book
 
 
-# @router.put("/{genre_id}/", response_model=OutGenreSchemas)
-# async def update_genre(
-#     genre_update: GenreUpdateSchemas,
-#     user: "User" = Depends(current_superuser_user),
-#     genre: Genre = Depends(genre_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ):
-#     try:
-#         res = await update_genre_db(
-#             session=session, genre=genre, genre_update=genre_update
-#         )
-#     except ExceptDB:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Error in data base",
-#         )
-#     else:
-#         return res
+@router.put("/{book_id}/", response_model=OutBookSchemas)
+async def update_book(
+    book_update: BookUpdateSchemas,
+    user: "User" = Depends(current_superuser_user),
+    book: Book = Depends(book_by_id),
+    session: AsyncSession = Depends(get_async_session),
+):
+    try:
+        res = await update_book_db(session=session, book=book, book_update=book_update)
+    except ErrorInData as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )
+    else:
+        return res
+
+
+@router.patch("/{book_id}/", response_model=OutBookSchemas)
+async def update_book(
+    book_update: BookUpdatePartialSchemas,
+    user: "User" = Depends(current_superuser_user),
+    book: Book = Depends(book_by_id),
+    session: AsyncSession = Depends(get_async_session),
+):
+    try:
+        res = await update_book_db(
+            session=session, book=book, book_update=book_update, partial=True
+        )
+    except ErrorInData as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )
+    else:
+        return res
+
+
 #
 #
 # @router.delete("/{genre_id}/", status_code=status.HTTP_204_NO_CONTENT)
