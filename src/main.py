@@ -3,10 +3,12 @@ from fastapi.responses import HTMLResponse, Response
 import uvicorn
 
 from src.users.routers import router as router_users
+from src.authors.routers import router as router_author
 
 app = FastAPI()
 
 app.include_router(router_users)
+app.include_router(router_author)
 
 
 @app.get("/", response_class=HTMLResponse)

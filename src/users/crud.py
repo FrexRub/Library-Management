@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from sqlalchemy import select
 from sqlalchemy.engine import Result
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import configure_logging
@@ -39,16 +39,19 @@ async def get_user_from_db(session: AsyncSession, username: str) -> User:
 
 
 async def get_user_by_id(session: AsyncSession, id_user: int) -> Optional[User]:
+    logger.info("User request by id %d" % id_user)
     return await session.get(User, id_user)
 
 
 async def find_user_by_email(session: AsyncSession, email: str) -> Optional[User]:
+    logger.info("User find by email %s" % email)
     stmt = select(User).filter(User.email == email)
     result: Result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
 
 async def create_user(session: AsyncSession, user_data: UserCreateSchemas) -> User:
+    logger.info("Start create user by name %s" % user_data.username)
     result: Optional[User] = await find_user_by_email(
         session=session, email=user_data.email
     )
@@ -76,10 +79,12 @@ async def create_user(session: AsyncSession, user_data: UserCreateSchemas) -> Us
         ).decode()
         session.add(new_user)
         await session.commit()
+        logger.info("User by name %s created" % user_data.username)
         return new_user
 
 
 async def get_users(session: AsyncSession) -> list[User]:
+    logger.info("Get list users")
     stmt = select(User).order_by(User.id)
     result: Result = await session.execute(stmt)
     users = result.scalars().all()
@@ -92,6 +97,7 @@ async def update_user_db(
     user_update: Union[UserUpdateSchemas, UserUpdatePartialSchemas],
     partial: bool = False,
 ) -> User:
+    logger.info("Start update user")
     try:
         for name, value in user_update.model_dump(
             exclude_unset=partial
@@ -107,5 +113,6 @@ async def update_user_db(
 
 
 async def delete_user_db(session: AsyncSession, user: User) -> None:
+    logger.info("Delete user by id %d" % user.id)
     await session.delete(user)
     await session.commit()
