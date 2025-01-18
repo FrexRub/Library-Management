@@ -43,13 +43,16 @@ async def new_author(
 ):
     try:
         result: Author = await create_author(session=session, author_in=author)
-    except ExceptDB:
+    except ExceptDB as exp:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error in data bases",
+            detail=f"{exp}",
         )
-    except ErrorInData:
-        pass
+    except ErrorInData as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )
     else:
         return result
 
@@ -83,17 +86,17 @@ async def update_author(
         res = await update_author_db(
             session=session, author=author, author_update=author_update
         )
-    except ExceptDB:
+    except ExceptDB as exp:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error in data base",
+            detail=f"{exp}",
         )
     else:
         return res
 
 
 @router.patch("/{author_id}/", response_model=OutAuthorSchemas)
-async def update_user_partial(
+async def update_author_partial(
     author_update: AuthorUpdatePartialSchemas,
     user: "User" = Depends(current_superuser_user),
     author: Author = Depends(author_by_id),
@@ -103,19 +106,25 @@ async def update_user_partial(
         res = await update_author_db(
             session=session, author=author, author_update=author_update, partial=True
         )
-    except ExceptDB:
+    except ExceptDB as exp:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error in data base",
+            detail=f"{exp}",
         )
     else:
         return res
 
 
 @router.delete("/{author_id}/", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(
+async def delete_author(
     user: "User" = Depends(current_superuser_user),
     author: Author = Depends(author_by_id),
     session: AsyncSession = Depends(get_async_session),
 ) -> None:
-    await delete_author_db(session=session, author=author)
+    try:
+        await delete_author_db(session=session, author=author)
+    except ExceptDB as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )

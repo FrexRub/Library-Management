@@ -77,5 +77,10 @@ async def update_author_db(
 
 async def delete_author_db(session: AsyncSession, author: Author) -> None:
     logger.info("Delete author by id %d" % author.id)
-    await session.delete(author)
-    await session.commit()
+    try:
+        await session.delete(author)
+        await session.commit()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+        await session.rollback()
+        raise ExceptDB(exc)
