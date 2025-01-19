@@ -1,15 +1,13 @@
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, String, Integer, ForeignKey, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 
 from src.core.database import Base
 
 if TYPE_CHECKING:
     from src.authors.models import Author
     from src.library.models import ReceivingBook
-    from src.users.models import User
 
 
 class Book(Base):
@@ -25,6 +23,4 @@ class Book(Base):
 
     author: Mapped["Author"] = relationship(back_populates="books")
 
-    user_details: Mapped[list["ReceivingBook"]] = relationship(back_populates="book")
-
-    users: AssociationProxy[list["User"]] = association_proxy("user_details", "user")
+    users: Mapped[list["ReceivingBook"]] = relationship(back_populates="book")

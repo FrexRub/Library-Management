@@ -26,8 +26,8 @@ class ReceivingBook(Base):
     )
     date_of_return: Mapped[DateTime] = mapped_column(DateTime)
 
-    book: Mapped["Book"] = relationship(back_populates="user_details")
-    user: Mapped["User"] = relationship(back_populates="book_details")
+    book: Mapped["Book"] = relationship(back_populates="users")
+    user: Mapped["User"] = relationship(back_populates="books")
 
     def __repr__(self) -> str:
         return f"{self.book_id}, {self.user_id}, {self.date_of_issue}, {self.date_of_return}"
