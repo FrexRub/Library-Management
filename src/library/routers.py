@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import Optional
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import Response
@@ -13,13 +13,13 @@ from src.core.exceptions import (
 from src.library.crud import (
     create_receiving,
     return_receiving,
+    get_books,
 )
-from src.books.dependencies import book_by_id
 from src.users.depends import (
     current_superuser_user,
     current_user_authorization,
 )
-from src.books.models import Book
+from src.books.schemas import OutBookFoolSchemas
 from src.users.models import User
 from src.library.models import ReceivingBook
 from src.library.schemas import (
@@ -88,73 +88,38 @@ async def return_book(
         return result
 
 
-#
-# @router.get(
-#     "/list", response_model=list[OutBookFoolSchemas], status_code=status.HTTP_200_OK
-# )
-# async def get_list_books(
-#     session: AsyncSession = Depends(get_async_session),
-#     user: "User" = Depends(current_user_authorization),
-# ):
-#     return await get_books(session=session)
-#
-#
-# @router.get("/{book_id}/", response_model=OutBookSchemas)
-# async def get_book(
-#     user: "User" = Depends(current_user_authorization),
-#     book: Book = Depends(book_by_id),
-# ):
-#     return book
-#
-#
-# @router.put("/{book_id}/", response_model=OutBookSchemas)
-# async def update_book(
-#     book_update: BookUpdateSchemas,
-#     user: "User" = Depends(current_superuser_user),
-#     book: Book = Depends(book_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ):
-#     try:
-#         res = await update_book_db(session=session, book=book, book_update=book_update)
-#     except ErrorInData as exp:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"{exp}",
-#         )
-#     else:
-#         return res
-#
-#
-# @router.patch("/{book_id}/", response_model=OutBookSchemas)
-# async def update_book(
-#     book_update: BookUpdatePartialSchemas,
-#     user: "User" = Depends(current_superuser_user),
-#     book: Book = Depends(book_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ):
-#     try:
-#         res = await update_book_db(
-#             session=session, book=book, book_update=book_update, partial=True
-#         )
-#     except ErrorInData as exp:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"{exp}",
-#         )
-#     else:
-#         return res
-#
-#
-# @router.delete("/{book_id}/", status_code=status.HTTP_204_NO_CONTENT)
-# async def delete_book(
-#     user: "User" = Depends(current_superuser_user),
-#     book: Book = Depends(book_by_id),
-#     session: AsyncSession = Depends(get_async_session),
-# ) -> None:
-#     try:
-#         await delete_book_db(session=session, book=book)
-#     except ExceptDB as exp:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"{exp}",
-#         )
+@router.get("/on-hands", response_model=list[OutBookFoolSchemas])
+async def get_books_user(
+    user: "User" = Depends(current_user_authorization),
+    session: AsyncSession = Depends(get_async_session),
+):
+    try:
+        result = await get_books(session=session, user_id=user.id)
+    except ExceptDB as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )
+    return result
+
+
+@router.get("/{user_id}/", response_model=list[OutBookFoolSchemas])
+async def get_book_user_by_id(
+    user_id: int,
+    user: "User" = Depends(current_superuser_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    user: Optional[User] = await session.get(User, user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User with id {user_id} not found",
+        )
+    try:
+        result = await get_books(session=session, user_id=user_id)
+    except ExceptDB as exp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{exp}",
+        )
+    return result

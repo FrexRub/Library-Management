@@ -20,6 +20,8 @@ from src.library.schemas import (
 )
 from src.core.exceptions import ErrorInData, ExceptDB
 from src.core.config import configure_logging
+from src.books.crud import book_to_schema
+from src.books.schemas import OutBookFoolSchemas
 from src.users.crud import get_user_by_id
 
 
@@ -105,24 +107,37 @@ async def return_receiving(
     return "The book has been returned to the library"
 
 
-#
-#
-# async def get_books(session: AsyncSession) -> list[OutBookFoolSchemas]:
-#     logger.info("Getting a list of books")
-#     try:
-#         stmt = select(Book).options(joinedload(Book.author)).order_by(Book.id)
-#         result: Result = await session.execute(stmt)
-#         books = result.scalars().all()
-#     except SQLAlchemyError as exc:
-#         logger.exception("Error in data base %s", exc)
-#     else:
-#         list_books = list()
-#         for book in books:  # type: Book
-#             list_books.append(await book_to_schema(session=session, book=book))
-#
-#         return list_books
-#
-#
+async def get_books(session: AsyncSession, user_id: int) -> list[OutBookFoolSchemas]:
+    logger.info("Getting a list of books user %s" % user_id)
+    try:
+        stmt = select(ReceivingBook).filter(ReceivingBook.user_id == user_id)
+        result: Result = await session.execute(stmt)
+        list_books = result.scalars().all()
+
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+        raise ExceptDB("Error in data base")
+    else:
+        list_id_books = list()
+        for book in list_books:
+            list_id_books.append(book.book_id)
+
+        stmt = (
+            select(Book)
+            .filter(Book.id.in_(list_id_books))
+            .options(joinedload(Book.author))
+            .order_by(Book.id)
+        )
+        result: Result = await session.execute(stmt)
+        books = result.scalars().all()
+
+        list_books = list()
+        for book in books:  # type: Book
+            list_books.append(await book_to_schema(session=session, book=book))
+
+        return list_books
+
+
 # async def get_book(session: AsyncSession, book_id: int) -> Optional[Book]:
 #     logger.info("Getting genre by id %d" % book_id)
 #     return await session.get(Book, book_id)
