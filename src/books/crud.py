@@ -15,6 +15,7 @@ from src.books.schemas import (
     BookCreateSchemas,
     OutBookFoolSchemas,
     AuthorSchemas,
+    BookFindSchemas,
 )
 from src.core.exceptions import ErrorInData, ExceptDB
 from src.core.config import configure_logging
@@ -136,3 +137,27 @@ async def delete_book_db(session: AsyncSession, book: Book) -> None:
         logger.exception("Error in data base %s", exc)
         await session.rollback()
         raise ExceptDB(exc)
+
+
+async def find_books_title(
+    session: AsyncSession, text: BookFindSchemas
+) -> list[OutBookFoolSchemas]:
+    find_text: str = text.model_dump()["text"]
+    logger.info("Start find books by title %s" % find_text)
+    try:
+        stmt = (
+            select(Book)
+            .filter(Book.title.ilike(f"%{find_text}%"))
+            .options(joinedload(Book.author))
+            .order_by(Book.id)
+        )
+        result: Result = await session.execute(stmt)
+        books = result.scalars().all()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+    else:
+        list_books = list()
+        for book in books:  # type: Book
+            list_books.append(await book_to_schema(session=session, book=book))
+
+        return list_books

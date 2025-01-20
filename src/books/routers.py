@@ -15,6 +15,7 @@ from src.books.crud import (
     get_books,
     update_book_db,
     delete_book_db,
+    find_books_title,
 )
 from src.books.dependencies import book_by_id
 from src.users.depends import (
@@ -28,6 +29,7 @@ from src.books.schemas import (
     BookCreateSchemas,
     OutBookSchemas,
     OutBookFoolSchemas,
+    BookFindSchemas,
 )
 
 if TYPE_CHECKING:
@@ -129,3 +131,12 @@ async def delete_book(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{exp}",
         )
+
+
+@router.post("/title", response_model=Page[OutBookFoolSchemas])
+async def get_book_by_title(
+    text: BookFindSchemas,
+    user: "User" = Depends(current_user_authorization),
+    session: AsyncSession = Depends(get_async_session),
+):
+    return paginate(await find_books_title(session=session, text=text))

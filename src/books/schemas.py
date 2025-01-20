@@ -30,6 +30,10 @@ class BookCreateSchemas(BookBaseSchemas):
     pass
 
 
+class BookFindSchemas(BaseModel):
+    text: str
+
+
 class AuthorSchemas(BaseModel):
     id: int
     full_name: str
