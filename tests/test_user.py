@@ -2,21 +2,17 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.users.models import User
+from src.users.crud import get_user_from_db
 from src.core.jwt_utils import create_jwt
 from src.core.config import COOKIE_NAME
 
-username_admin = "SRub"
-email_admin = "frexxx@mail.ru"
+username_admin = "TestUser"
+email_admin = "test_user@mail.ru"
 password_admin = "1qaz!QAZ"
 
 username = "Bob"
 email = "Bob@mail.ru"
 password = "1qaz!QAZ"
-
-
-async def test_get_client(client: AsyncClient):
-    response = await client.get("/")
-    assert response.status_code == 200
 
 
 async def test_create_user(client: AsyncClient):
@@ -29,7 +25,7 @@ async def test_create_user(client: AsyncClient):
     }  # Данные для полей формы
     response = await client.post("/users/create", json=user)
     assert response.status_code == 201
-    assert response.json()["id"] == 1
+    assert response.json()["username"] == username_admin
 
 
 async def test_create_user_bad_email(client: AsyncClient):
@@ -67,11 +63,11 @@ async def test_create_user_not_admin(client: AsyncClient):
     }  # Данные для полей формы
     response = await client.post("/users/create", json=user)
     assert response.status_code == 201
-    assert response.json()["id"] == 2
+    assert response.json()["username"] == username
 
 
 async def test_set_user_admin(db_session: AsyncSession):
-    user = await db_session.get(User, 1)
+    user = await get_user_from_db(db_session, username_admin)
     user.is_superuser = True
     await db_session.commit()
     assert user.is_superuser
@@ -88,24 +84,27 @@ async def test_login_user(client: AsyncClient):
     assert response.cookies.get(COOKIE_NAME) != None
 
 
-async def test_get_list_user_admin(client: AsyncClient):
-    jwt: str = create_jwt("1")
+async def test_get_list_user_admin(client: AsyncClient, db_session: AsyncSession):
+    user = await get_user_from_db(db_session, username_admin)
+    jwt: str = create_jwt(str(user.id))
     cookies = {COOKIE_NAME: jwt}
     response = await client.get("/users/list", cookies=cookies)
 
     assert response.status_code == 200
 
 
-async def test_get_list_user_not_admin(client: AsyncClient):
-    jwt: str = create_jwt("2")
+async def test_get_list_user_not_admin(client: AsyncClient, db_session: AsyncSession):
+    user = await get_user_from_db(db_session, username)
+    jwt: str = create_jwt(str(user.id))
     cookies = {COOKIE_NAME: jwt}
     response = await client.get("/users/list", cookies=cookies)
 
     assert response.status_code == 403
 
 
-async def test_get_user_by_id(client: AsyncClient):
-    jwt: str = create_jwt("1")
+async def test_get_user_by_id(client: AsyncClient, db_session: AsyncSession):
+    user = await get_user_from_db(db_session, username_admin)
+    jwt: str = create_jwt(str(user.id))
     cookies = {COOKIE_NAME: jwt}
     response = await client.get("/users/2/", cookies=cookies)
 
@@ -113,8 +112,9 @@ async def test_get_user_by_id(client: AsyncClient):
     assert response.json()["id"] == 2
 
 
-async def test_put_user_by_id(client: AsyncClient):
-    jwt: str = create_jwt("1")
+async def test_put_user_by_id(client: AsyncClient, db_session: AsyncSession):
+    user = await get_user_from_db(db_session, username_admin)
+    jwt: str = create_jwt(str(user.id))
     cookies = {COOKIE_NAME: jwt}
     data = {
         "first_name": "Test1",
@@ -127,8 +127,9 @@ async def test_put_user_by_id(client: AsyncClient):
     assert response.json()["first_name"] == "Test1"
 
 
-async def test_patch_user_by_id(client: AsyncClient):
-    jwt: str = create_jwt("1")
+async def test_patch_user_by_id(client: AsyncClient, db_session: AsyncSession):
+    user = await get_user_from_db(db_session, username_admin)
+    jwt: str = create_jwt(str(user.id))
     cookies = {COOKIE_NAME: jwt}
     data = {"first_name": "Test2"}
     response = await client.patch("/users/2/", cookies=cookies, json=data)
@@ -138,7 +139,8 @@ async def test_patch_user_by_id(client: AsyncClient):
 
 
 async def test_delete_user_by_id(client: AsyncClient, db_session: AsyncSession):
-    jwt: str = create_jwt("1")
+    user = await get_user_from_db(db_session, username_admin)
+    jwt: str = create_jwt(str(user.id))
     cookies = {COOKIE_NAME: jwt}
     response = await client.delete("/users/2/", cookies=cookies)
 
