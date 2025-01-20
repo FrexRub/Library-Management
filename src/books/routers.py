@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, status
+from fastapi_pagination import Page, paginate
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -58,13 +59,15 @@ async def new_book(
 
 
 @router.get(
-    "/list", response_model=list[OutBookFoolSchemas], status_code=status.HTTP_200_OK
+    "/list",
+    response_model=Page[OutBookFoolSchemas],
+    status_code=status.HTTP_200_OK,
 )
 async def get_list_books(
     session: AsyncSession = Depends(get_async_session),
     user: "User" = Depends(current_user_authorization),
 ):
-    return await get_books(session=session)
+    return paginate(await get_books(session=session))
 
 
 @router.get("/{book_id}/", response_model=OutBookSchemas)

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Response, status
 from fastapi.exceptions import HTTPException
+from fastapi_pagination import Page, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import COOKIE_NAME
@@ -93,13 +94,15 @@ async def userlogin(
 
 
 @router.get(
-    "/list", response_model=list[OutUserSchemas], status_code=status.HTTP_200_OK
+    "/list",
+    response_model=Page[OutUserSchemas],
+    status_code=status.HTTP_200_OK,
 )
 async def get_list_users(
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_superuser_user),
 ):
-    return await get_users(session=session)
+    return paginate(await get_users(session=session))
 
 
 @router.get("/{id_user}/", response_model=OutUserSchemas)
