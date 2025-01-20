@@ -105,12 +105,16 @@ async def get_list_users(
     return paginate(await get_users(session=session))
 
 
-@router.get("/{id_user}/", response_model=OutUserSchemas)
+@router.get(
+    "/{id_user}/", response_model=OutUserSchemas, status_code=status.HTTP_200_OK
+)
 async def get_user(user: User = Depends(user_by_id)):
     return user
 
 
-@router.put("/{id_user}/", response_model=OutUserSchemas)
+@router.put(
+    "/{id_user}/", response_model=OutUserSchemas, status_code=status.HTTP_200_OK
+)
 async def update_user(
     user_update: UserUpdateSchemas,
     user: User = Depends(user_by_id),
@@ -127,7 +131,9 @@ async def update_user(
         return res
 
 
-@router.patch("/{id_user}/", response_model=OutUserSchemas)
+@router.patch(
+    "/{id_user}/", response_model=OutUserSchemas, status_code=status.HTTP_200_OK
+)
 async def update_user_partial(
     user_update: UserUpdatePartialSchemas,
     user: User = Depends(user_by_id),

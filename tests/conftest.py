@@ -15,14 +15,9 @@ from src.main import app
 
 SQLALCHEMY_DATABASE_URL = "postgresql+asyncpg://test:test@localhost:5432/testdb"
 
-# SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///test.sqlite3"
-
 
 @pytest_asyncio.fixture(loop_scope="session", scope="session")
 def event_loop(request) -> Generator[asyncio.AbstractEventLoop, None, None]:
-    """
-    Создаем экземпляр цикла обработки событий для каждого тестового примера.
-    """
     loop: asyncio.AbstractEventLoop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()

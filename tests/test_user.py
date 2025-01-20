@@ -45,6 +45,31 @@ async def test_create_user_bad_email(client: AsyncClient):
     assert response.json()["detail"] == "The email address is already in use"
 
 
+async def test_create_user_bad_password(client: AsyncClient):
+    user = {
+        "username": username,
+        "first_name": "",
+        "last_name": "",
+        "email": email,
+        "password": "password",
+    }  # Данные для полей формы
+    response = await client.post("/users/create", json=user)
+    assert response.status_code == 422
+
+
+async def test_create_user_not_admin(client: AsyncClient):
+    user = {
+        "username": username,
+        "first_name": "",
+        "last_name": "",
+        "email": email,
+        "password": password,
+    }  # Данные для полей формы
+    response = await client.post("/users/create", json=user)
+    assert response.status_code == 201
+    assert response.json()["id"] == 2
+
+
 async def test_set_user_admin(db_session: AsyncSession):
     user = await db_session.get(User, 1)
     user.is_superuser = True
@@ -63,7 +88,7 @@ async def test_login_user(client: AsyncClient):
     assert response.cookies.get(COOKIE_NAME) != None
 
 
-async def test_create_new_post(client: AsyncClient):
+async def test_get_list_user_admin(client: AsyncClient):
     jwt: str = create_jwt("1")
     cookies = {COOKIE_NAME: jwt}
     response = await client.get("/users/list", cookies=cookies)
@@ -71,64 +96,52 @@ async def test_create_new_post(client: AsyncClient):
     assert response.status_code == 200
 
 
-# async def test_get_main(client: AsyncClient):
-#     response = await client.get("/posts")
-#     assert response.status_code == 307
-#
-#
-# async def test_create_user(db_session: AsyncSession):
-#     hash_password = create_hash_password(PASSWORD).decode()
-#     user: User = User(
-#         username=USERNAME,
-#         email=EMAIL,
-#         hashed_password=hash_password,
-#         is_active=True,
-#         is_superuser=False,
-#     )
-#     assert user.username == USERNAME
-#     num: int = await add_user_to_db(db_session, user)
-#     assert num == 1
-#
-#
-# async def test_create_user_raises(db_session: AsyncSession):
-#     hash_password = create_hash_password(PASSWORD).decode()
-#     user: User = User(
-#         username=USERNAME,
-#         email=EMAIL,
-#         hashed_password=hash_password,
-#         is_active=True,
-#         is_superuser=False,
-#     )
-#
-#     with pytest.raises(ExceptDB):
-#         await add_user_to_db(db_session, user)
-#
-#
-# def test_create_jwt():
-#     jwt: str = create_jwt("1")
-#     assert jwt.count(".") == 2
-#
-#
-# async def test_create_new_post(client: AsyncClient):
-#     # В случае успеха в эндпоинте идет переадресация на страницу index.html
-#     jwt: str = create_jwt("1")
-#     cookies = {COOKIE_NAME: jwt}
-#     post = {"title": "Test", "content": "Test post"}
-#     response = await client.post("/posts", data=post, cookies=cookies)
-#     assert response.status_code == 307
-#
-#
-# async def test_endpoint_test(client: AsyncClient):
-#     post = {"title": "Test", "content": "Test post"}  # Данные для полей формы
-#     jwt: str = create_jwt("1")
-#     cookies = {COOKIE_NAME: jwt}  # Генерация куков для авторизации
-#     response = await client.post("/posts/test", data=post, cookies=cookies)
-#     assert response.status_code == 200
-#     assert response.json()["title"] == "Test"
-#
-#
-# async def test_add_new_post_bd(db_session: AsyncSession):
-#     post: PostCreate = PostCreate(title="Test", body="Test post")
-#     await add_new_post(session=db_session, post=post, id_user=1)
-#     post_db: Post = await db_session.get(Post, 1)
-#     assert post_db.id == 1
+async def test_get_list_user_not_admin(client: AsyncClient):
+    jwt: str = create_jwt("2")
+    cookies = {COOKIE_NAME: jwt}
+    response = await client.get("/users/list", cookies=cookies)
+
+    assert response.status_code == 403
+
+
+async def test_get_user_by_id(client: AsyncClient):
+    jwt: str = create_jwt("1")
+    cookies = {COOKIE_NAME: jwt}
+    response = await client.get("/users/2/", cookies=cookies)
+
+    assert response.status_code == 200
+    assert response.json()["id"] == 2
+
+
+async def test_put_user_by_id(client: AsyncClient):
+    jwt: str = create_jwt("1")
+    cookies = {COOKIE_NAME: jwt}
+    data = {
+        "first_name": "Test1",
+        "last_name": "test1",
+        "email": "test@mail.com",
+    }
+    response = await client.put("/users/2/", cookies=cookies, json=data)
+
+    assert response.status_code == 200
+    assert response.json()["first_name"] == "Test1"
+
+
+async def test_patch_user_by_id(client: AsyncClient):
+    jwt: str = create_jwt("1")
+    cookies = {COOKIE_NAME: jwt}
+    data = {"first_name": "Test2"}
+    response = await client.patch("/users/2/", cookies=cookies, json=data)
+
+    assert response.status_code == 200
+    assert response.json()["first_name"] == "Test2"
+
+
+async def test_delete_user_by_id(client: AsyncClient, db_session: AsyncSession):
+    jwt: str = create_jwt("1")
+    cookies = {COOKIE_NAME: jwt}
+    response = await client.delete("/users/2/", cookies=cookies)
+
+    user = await db_session.get(User, 2)
+    assert response.status_code == 204
+    assert user is None

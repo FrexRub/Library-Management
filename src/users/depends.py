@@ -46,7 +46,7 @@ async def current_superuser_user(
 
     if not user.is_superuser:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="The user is not an administrator",
         )
     return user
