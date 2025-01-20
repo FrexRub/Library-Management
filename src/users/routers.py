@@ -61,7 +61,7 @@ async def user_registration(
         return result
 
 
-@router.post("/login", response_class=Response, status_code=status.HTTP_200_OK)
+@router.post("/login", response_class=Response, status_code=status.HTTP_202_ACCEPTED)
 async def userlogin(
     data_login: LoginSchemas, session: AsyncSession = Depends(get_async_session)
 ):

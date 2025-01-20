@@ -2,7 +2,7 @@ import logging
 from typing import Optional, Union
 
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.engine import Result
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +16,8 @@ from src.books.schemas import (
     OutBookFoolSchemas,
     AuthorSchemas,
     BookFindSchemas,
+    OutBookShortSchemas,
+    OutAuthorBooksSchemas,
 )
 from src.core.exceptions import ErrorInData, ExceptDB
 from src.core.config import configure_logging
@@ -161,3 +163,40 @@ async def find_books_title(
             list_books.append(await book_to_schema(session=session, book=book))
 
         return list_books
+
+
+async def find_books_author(
+    session: AsyncSession, text: BookFindSchemas
+) -> list[OutAuthorBooksSchemas]:
+    find_text: str = text.model_dump()["text"]
+    logger.info("Start find books by author %s" % find_text)
+    try:
+        stmt = (
+            select(Author)
+            .filter(Author.full_name.ilike(f"%{find_text}%"))
+            .options(selectinload(Author.books))
+            .order_by(Author.id)
+        )
+        result: Result = await session.execute(stmt)
+        authors = result.scalars().all()
+    except SQLAlchemyError as exc:
+        logger.exception("Error in data base %s", exc)
+    else:
+        list_author_books = list()
+        for author in authors:
+            out_author = AuthorSchemas(id=author.id, full_name=author.full_name)
+            list_books = list()
+            for book in author.books:  # type: Book
+                out_book = OutBookShortSchemas(
+                    title=book.title,
+                    description=book.description,
+                    release_date=book.release_date,
+                    count=book.count,
+                )
+                list_books.append(out_book)
+
+            list_author_books.append(
+                OutAuthorBooksSchemas(author=out_author, books=list_books)
+            )
+
+        return list_author_books

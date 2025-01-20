@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Response
 from fastapi_pagination import Page, paginate
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +16,7 @@ from src.books.crud import (
     update_book_db,
     delete_book_db,
     find_books_title,
+    find_books_author,
 )
 from src.books.dependencies import book_by_id
 from src.users.depends import (
@@ -30,6 +31,7 @@ from src.books.schemas import (
     OutBookSchemas,
     OutBookFoolSchemas,
     BookFindSchemas,
+    OutAuthorBooksSchemas,
 )
 
 if TYPE_CHECKING:
@@ -134,9 +136,19 @@ async def delete_book(
 
 
 @router.post("/title", response_model=Page[OutBookFoolSchemas])
-async def get_book_by_title(
+async def find_book_by_title(
     text: BookFindSchemas,
     user: "User" = Depends(current_user_authorization),
     session: AsyncSession = Depends(get_async_session),
 ):
     return paginate(await find_books_title(session=session, text=text))
+
+
+@router.post("/author", response_model=Page[OutAuthorBooksSchemas])
+async def find_book_by_author(
+    text: BookFindSchemas,
+    user: "User" = Depends(current_user_authorization),
+    session: AsyncSession = Depends(get_async_session),
+):
+
+    return paginate(await find_books_author(session=session, text=text))

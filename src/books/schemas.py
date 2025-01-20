@@ -57,3 +57,15 @@ class OutBookFoolSchemas(BaseModel):
     release_date: date
     count: int
     genres: list[str]
+
+
+class OutBookShortSchemas(BaseModel):
+    title: str
+    description: str
+    release_date: date
+    count: int
+
+
+class OutAuthorBooksSchemas(BaseModel):
+    author: AuthorSchemas
+    books: list[OutBookShortSchemas]

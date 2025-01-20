@@ -20,3 +20,6 @@ class Author(Base):
     books: Mapped[list["Book"]] = relationship(
         back_populates="author", cascade="all, delete-orphan", passive_deletes=True
     )
+
+    def __str__(self):
+        return f"Author id:{self.id} full_name: {self.full_name} date_birthe:{self.date_birth}"

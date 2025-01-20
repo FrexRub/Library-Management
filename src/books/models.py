@@ -24,3 +24,6 @@ class Book(Base):
     author: Mapped["Author"] = relationship(back_populates="books")
 
     users: Mapped[list["ReceivingBook"]] = relationship(back_populates="book")
+
+    def __str__(self):
+        return f"Book id:{self.id} title: {self.title} release date:{self.release_date}"
