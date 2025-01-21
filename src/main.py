@@ -26,7 +26,7 @@ add_pagination(app)
 
 @app.get("/", response_class=HTMLResponse)
 def index(response: Response):
-    return HTMLResponse("Library Management")
+    return HTMLResponse("<h2> Library Management </h2>")
 
 
 if __name__ == "__main__":
