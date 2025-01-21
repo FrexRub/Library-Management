@@ -65,7 +65,8 @@ UPDATE users SET is_superuser = True WHERE id = 1;
 exit
 ```
 После создания пользователя необходимо авторизоваться через запрос /users/login в разделе Users
-![Логирование пользователя](readme_img/user_loging.jpg)
+
+![Логирование пользователя](readme_img/loging.jpg)
 
 Затем можно начать работу по управлению библиотекой. 
 
