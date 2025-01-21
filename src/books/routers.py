@@ -37,7 +37,7 @@ from src.books.schemas import (
 if TYPE_CHECKING:
     from src.users.models import User
 
-router = APIRouter(prefix="/books", tags=["books"])
+router = APIRouter(prefix="/books", tags=["Books"])
 
 
 @router.post("/new", response_model=OutBookSchemas, status_code=status.HTTP_201_CREATED)

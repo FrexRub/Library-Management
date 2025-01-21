@@ -53,9 +53,30 @@ docker compose exec app alembic upgrade head
  В базе данных (можно подключиться с помощью DBeaver) устанавливаем у данного пользователя атрибут is_superuser в значение True или выполняем команды
 
 ```
-docker compose exec db_lib psql -U postgras -W admin
+docker exec -it library-management-db_lib-1 psql -U postgres -W library_db
+```
+```
+password: admin
+```
+```
 UPDATE users SET is_superuser = True WHERE id = 1;
 ```
+```
+exit
+```
+После создания пользователя необходимо авторизоваться через запрос /users/login в разделе Users
+![Логирование пользователя](readme_img/user_loging.jpg)
+
+Затем можно начать работу по управлению библиотекой. 
+
+Для каждой задачи создан отдельный раздел:
+- User - авторизация и аутентификация пользователей
+- Authors - управление авторами
+- Genres - управление жанрами
+- Books - управление книгами
+- Library - поиск, выдача и возврат книг
+
+![Группы](readme_img/groups.jpg)
 
 ## Тестирование проекта
 

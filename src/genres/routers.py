@@ -29,7 +29,7 @@ from src.genres.schemas import (
 if TYPE_CHECKING:
     from src.users.models import User
 
-router = APIRouter(prefix="/genres", tags=["genres"])
+router = APIRouter(prefix="/genres", tags=["Genres"])
 
 
 @router.post(

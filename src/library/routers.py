@@ -29,7 +29,7 @@ from src.library.schemas import (
 )
 
 
-router = APIRouter(prefix="/library", tags=["library"])
+router = APIRouter(prefix="/library", tags=["Library"])
 
 
 @router.post(
