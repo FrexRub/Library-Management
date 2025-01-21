@@ -105,6 +105,6 @@ async def test_delete_author_by_id(client: AsyncClient, db_session: AsyncSession
     cookies = {COOKIE_NAME: jwt}
     response = await client.delete("/authors/1/", cookies=cookies)
 
-    user = await db_session.get(Author, 2)
+    user = await db_session.get(Author, 1)
     assert response.status_code == 204
     assert user is None
